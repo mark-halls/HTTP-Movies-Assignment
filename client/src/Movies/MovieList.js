@@ -17,11 +17,22 @@ export default class MovieList extends Component {
       .catch(err => console.log(err.response));
   }
 
+  removeMovie = movieId => {
+    this.setState({
+      ...this.state,
+      movies: this.state.movies.filter(movie => movie.id !== movieId)
+    });
+  };
   render() {
     return (
       <div className="movie-list">
         {this.state.movies.map(movie => (
-          <MovieDetails key={movie.id} movie={movie} {...this.props} />
+          <MovieDetails
+            key={movie.id}
+            movie={movie}
+            removeMovie={this.removeMovie}
+            {...this.props}
+          />
         ))}
       </div>
     );
@@ -30,7 +41,6 @@ export default class MovieList extends Component {
 
 function MovieDetails(props) {
   const { movie } = props;
-  console.log(movie);
   return (
     <>
       <Link to={`/movies/${movie.id}`}>
@@ -38,6 +48,19 @@ function MovieDetails(props) {
       </Link>
       <button onClick={() => props.history.push(`/update-movie/${movie.id}`)}>
         Edit
+      </button>
+      <button
+        onClick={() =>
+          axios
+            .delete(`http://localhost:5000/api/movies/${movie.id}`)
+            .then(res => {
+              props.removeMovie(res.data);
+              props.history.push("/");
+            })
+            .catch(err => console.error(err))
+        }
+      >
+        Delete
       </button>
     </>
   );
